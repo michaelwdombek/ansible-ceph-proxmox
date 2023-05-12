@@ -28,6 +28,8 @@ validate:
   needs: []
 
 build:
+  variables:
+    HCLOUD_TOKEN: $HCLOUD_READ_TOKEN
   extends: .terraform:build
   environment:
     name: $TF_STATE_NAME
