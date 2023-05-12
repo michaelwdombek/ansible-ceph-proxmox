@@ -3,7 +3,7 @@ provider "hcloud" {
 
 resource "hcloud_ssh_key" "ansible_key" {
   name       = "AnsibleKey"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = var.ansible_ssh_key
 }
 
 resource "hcloud_volume" "vol_a" {
