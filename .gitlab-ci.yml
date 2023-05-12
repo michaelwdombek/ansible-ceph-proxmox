@@ -42,3 +42,9 @@ deploy:
   environment:
     name: $TF_STATE_NAME
     action: start
+
+destroy:
+  extends: .terraform:destroy
+  environment:
+    name: $TF_STATE_NAME
+    action: stop
