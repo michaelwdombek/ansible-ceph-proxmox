@@ -8,9 +8,10 @@ include:
   - template: Terraform/Base.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Terraform/Base.gitlab-ci.yml
   - template: Jobs/SAST-IaC.gitlab-ci.yml   # https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Jobs/SAST-IaC.gitlab-ci.yml
 
-default:
-  variables:
-    TF_VAR_ansible_ssh_key: $SSH_PUB_KEY
+
+variables:
+  TF_VAR_ansible_ssh_key: $SSH_PUB_KEY
+
 stages:
   - validate
   - test
