@@ -5,9 +5,8 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Terraform.gitlab-ci.yml
 
 include:
-  - template: Terraform/Base.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Terraform/Base.gitlab-ci.yml
-  - template: Jobs/SAST-IaC.gitlab-ci.yml   # https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Jobs/SAST-IaC.gitlab-ci.yml
-
+  - local: "gitlab-ci/gl-ci-ansible.yml"
+  - local: "gitlab-ci/gl-ci-tf.yml"
 
 variables:
   TF_VAR_ansible_ssh_key: $SSH_PUB_KEY
@@ -18,33 +17,3 @@ stages:
   - build
   - deploy
   - cleanup
-
-fmt:
-  extends: .terraform:fmt
-  needs: []
-
-validate:
-  extends: .terraform:validate
-  needs: []
-
-build:
-  variables:
-    HCLOUD_TOKEN: $HCLOUD_READ_TOKEN
-  extends: .terraform:build
-  environment:
-    name: $TF_STATE_NAME
-    action: prepare
-
-deploy:
-  extends: .terraform:deploy
-  dependencies:
-    - build
-  environment:
-    name: $TF_STATE_NAME
-    action: start
-
-destroy:
-  extends: .terraform:destroy
-  environment:
-    name: $TF_STATE_NAME
-    action: stop

@@ -2,30 +2,30 @@ provider "hcloud" {
 }
 
 resource "hcloud_ssh_key" "ansible_key" {
-  name       = "AnsibleKey"
+  name       = "${var.local_offset}AnsibleKey"
   public_key = var.ansible_ssh_key
 }
 
 resource "hcloud_volume" "vol_a" {
   location = "nbg1"
-  name     = "vol-a"
+  name     = "${var.local_offset}vol-a"
   size     = 10 # Volume size in GB
 }
 
 resource "hcloud_volume" "vol_b" {
   location = "nbg1"
-  name     = "vol-b"
+  name     = "${var.local_offset}vol-b"
   size     = 10 # Volume size in GB
 }
 
 resource "hcloud_volume" "vol_c" {
   location = "nbg1"
-  name     = "vol-c"
+  name     = "${var.local_offset}vol-c"
   size     = 10 # Volume size in GB
 }
 
 resource "hcloud_server" "srv_a" {
-  name        = "srv-a"
+  name        = "${var.local_offset}srv-a"
   server_type = "cx11"      # Hetzner Cloud server type
   image       = "debian-11" # OS image for the server
   datacenter  = "nbg1-dc3"
@@ -33,7 +33,7 @@ resource "hcloud_server" "srv_a" {
 }
 
 resource "hcloud_server" "srv_b" {
-  name        = "srv-b"
+  name        = "${var.local_offset}srv-b"
   server_type = "cx11"      # Hetzner Cloud server type
   image       = "debian-11" # OS image for the server
   datacenter  = "nbg1-dc3"
@@ -41,7 +41,7 @@ resource "hcloud_server" "srv_b" {
 }
 
 resource "hcloud_server" "srv_c" {
-  name        = "srv-c"
+  name        = "${var.local_offset}srv-c"
   server_type = "cx11"      # Hetzner Cloud server type
   image       = "debian-11" # OS image for the server
   datacenter  = "nbg1-dc3"
