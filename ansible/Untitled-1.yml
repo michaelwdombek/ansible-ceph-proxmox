@@ -1,0 +1,123 @@
+---
+#- name: Install epel on mons
+#  hosts: mons
+#  become: true
+#  tasks:
+#    - package:
+#        name: epel-release
+#        state: present
+- name: Run cephadm collection
+  any_errors_fatal: True
+  hosts: ceph
+  become: true
+  vars:
+    cephadm_ceph_release: "pacific"
+    cephadm_fsid: "736XXXXX3a"
+    cephadm_public_interface: "{{ public_net_interface }}"
+    cephadm_public_network: "{{ public_net_cidr }}"
+    cephadm_cluster_interface: "{{ storage_net_interface }}"
+    cephadm_cluster_network: "{{ storage_net_cidr }}"
+    cephadm_enable_dashboard: True
+    cephadm_enable_monitoring: True
+    cephadm_install_ceph_cli: True
+    cephadm_enable_firewalld: False
+    cephadm_bootstrap_host: "{{ groups['mgrs'][0] }}"
+    cephadm_osd_spec:
+      service_type: osd
+      service_id: osd_spec_default
+      placement:
+        host_pattern: "*cephosd*"
+      data_devices:
+        paths:
+          - /dev/vdb
+          - /dev/vdc
+    cephadm_pools:
+      - name: data
+        application: cephfs
+        state: present
+        size: 3
+      - name: metadata
+        application: cephfs
+        state: present
+        size: 3
+      - name: rbd-internal
+        application: rbd
+        state: present
+        size: 3
+### these keys don't seem to get applied...
+    cephadm_keys:
+      - name: client.global
+        caps:
+          mds: "allow rwp"
+          mon: "allow r, profile rbd"
+          osd: "allow * pool=*"
+          mgr: "allow rw, profile rbd pool=rbd-internal"
+        state: present
+    cephadm_commands:
+      - "fs new gradientdev metadata data"
+      - "orch apply mds gradientdev --placement 3"
+      - "auth get-or-create client.gradient"
+      - "auth caps client.gradient mds 'allow rwps' mon 'allow r, profile rbd' mgr 'allow rw, profile rbd pool=rbd-internal' osd 'allow rw tag cephfs *=*, profile rbd pool=rbd-internal'"
+  pre_tasks:
+  - name: Recursively remove /mnt/public directory
+    ansible.builtin.file:
+      path: /mnt/public
+      state: absent
+  - name: Recursively remove /mnt/poddata directory
+    ansible.builtin.file:
+      path: /mnt/poddata
+      state: absent
+  - name: Unmount /dev/vdb /mnt if mounted
+    ansible.posix.mount:
+      path: /mnt
+      src: /dev/vdb
+      state: absent
+    register: mnt_unmounted
+  - name: Debug unmount /dev/vdb
+    ansible.builtin.debug:
+      msg: "{{ mnt_unmounted }}"
+    when: false
+#    become: true
+  - name: reboot the machine when /mnt has been removed
+    ansible.builtin.reboot:
+    when: mnt_unmounted.changed == true
+  - name: Create /var/lib/ceph mountpoint
+    ansible.builtin.file:
+      path: /var/lib/ceph
+      mode: 0755
+      state: directory
+    when: "'cephmgr' in inventory_hostname"
+  - name: Mount /dev/vdb /var/lib/ceph for mons
+    ansible.posix.mount:
+      path: /var/lib/ceph
+      src: /dev/vdb
+      state: mounted
+      fstype: ext4
+    when: "'cephmgr' in inventory_hostname"
+  - name: Generate /etc/hosts
+    blockinfile:
+      path: /etc/hosts
+      marker_begin: BEGIN CEPH host
+      block: |
+        10.12.17.96 lr17-1-cephmgr1
+        10.12.17.198 lr17-1-cephmgr2
+        10.12.17.216 lr17-1-cephmgr3
+        10.12.17.148 lr17-1-cephosd1
+        10.12.17.185 lr17-1-cephosd2
+        10.12.17.128 lr17-1-cephosd3
+        10.12.17.54 lr17-1-cephosd4
+        10.12.17.126 lr17-1-cephosd5
+        10.12.17.67 lr17-1-cephosd6
+        10.12.17.130 lr17-1-cephosd7
+        10.12.17.31 lr17-1-cephosd8
+        10.12.17.60 lr17-1-cephosd9
+        10.12.17.222 lr17-1-cephosd10
+        10.12.17.171 lr17-1-cephosd11
+        10.12.17.39 lr17-1-cephosd12
+        10.12.17.18 lr17-1-cephosd13
+    become: true
+  roles:
+    - role: stackhpc.cephadm.cephadm
+    - role: stackhpc.cephadm.pools
+    - role: stackhpc.cephadm.keys
+    - role: stackhpc.cephadm.commands

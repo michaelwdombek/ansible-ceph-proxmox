@@ -32,4 +32,4 @@ ansible_inventory:
     - tf_output
   image: "registry.hub.docker.com/cytopia/ansible:latest-tools"
   script:
-    - cat cicd_tf_state.json
+    - yq e -P '.ansible_inventory.value' cicd_tf_state.json | yq e '.. style="double"' - > ansible-hosts.yml
