@@ -1,0 +1,6 @@
+runner_build:
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:runner_latest -f docker_runner/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE:runner_latest

@@ -7,6 +7,9 @@
 include:
   - local: "gitlab-ci/gl-ci-ansible.yml"
   - local: "gitlab-ci/gl-ci-tf.yml"
+  - local: "gitlab-ci/gl-ci-ansible-runner.yml"
+    rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"&& $TASK == "BUILDRUNNER"
 
 variables:
   TF_VAR_ansible_ssh_key: $SSH_PUB_KEY
